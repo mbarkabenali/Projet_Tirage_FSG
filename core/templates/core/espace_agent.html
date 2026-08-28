@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Espace Agent de Tirage</h2>
+</div>
+
+<!-- Formulaire de recherche et filtres -->
+<form method="GET" class="row g-2 mb-4">
+    <div class="col-md-5">
+        <input type="text" name="q" class="form-control" placeholder="Rechercher par matière ou enseignant..." value="{{ query }}">
+    </div>
+    <div class="col-md-4">
+        <select name="statut" class="form-select">
+            <option value="">Tous les statuts</option>
+            <option value="EN_ATTENTE" {% if statut_filter == 'EN_ATTENTE' or statut_filter == 'En attente' %}selected{% endif %}>En attente</option>
+            <option value="En cours" {% if statut_filter == 'En cours' %}selected{% endif %}>En cours</option>
+            <option value="Terminé" {% if statut_filter == 'Terminé' %}selected{% endif %}>Terminé</option>
+        </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100">🔍 Filtrer</button>
+        {% if query or statut_filter %}
+            <a href="{% url 'espace_agent' %}" class="btn btn-outline-secondary">Réinitialiser</a>
+        {% endif %}
+    </div>
+</form>
+
+<table class="table table-striped align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Date</th>
+            <th>Enseignant</th>
+            <th>Matière / Titre</th>
+            <th>Copies</th>
+            <th>Fichier</th>
+            <th>Statut</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in demandes %}
+        <tr>
+            <td>{{ d.date_demande|date:"d/m/Y H:i" }}</td>
+            <td>{{ d.enseignant.user.username }}</td>
+            <td>
+                <a href="{% url 'detail_demande' d.id %}" class="text-decoration-none text-dark fw-bold">
+                    {{ d.matiere }} - {{ d.titre_epreuve }} 👁️
+                </a>
+            </td>
+            <td>{{ d.nombre_exemplaires }}</td>
+            <td>
+                {% if d.fichier_pdf %}
+                    <a href="{{ d.fichier_pdf.url }}" class="btn btn-sm btn-outline-primary" target="_blank">📄 Télécharger</a>
+                {% else %}
+                    <span class="text-muted">Aucun</span>
+                {% endif %}
+            </td>
+            <td>
+                <span class="badge 
+                    {% if d.statut == 'Terminé' or d.statut == 'TERMINÉ' %}bg-success
+                    {% elif d.statut == 'En cours' or d.statut == 'EN_COURS' %}bg-warning text-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {{ d.get_statut_display|default:d.statut }}
+                </span>
+            </td>
+            <td>
+                <a href="{% url 'changer_statut' d.id 'En cours' %}" class="btn btn-sm btn-warning">En cours</a>
+                <a href="{% url 'changer_statut' d.id 'Terminé' %}" class="btn btn-sm btn-success">Terminé</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="text-center">Aucune demande ne correspond à la recherche.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

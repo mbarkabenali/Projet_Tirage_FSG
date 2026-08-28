@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mes Demandes de Tirage</h2>
+    <a href="{% url 'creer_demande' %}" class="btn btn-primary">+ Nouvelle demande</a>
+</div>
+
+<table class="table table-striped align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Date</th>
+            <th>Matière / Titre</th>
+            <th>Copies</th>
+            <th>Fichier</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in demandes %}
+        <tr>
+            <td>{{ d.date_demande|date:"d/m/Y H:i" }}</td>
+            <td>
+                <!-- Le lien vers la vue détaillée entoure le titre de la matière -->
+                <a href="{% url 'detail_demande' d.id %}" class="text-decoration-none text-dark">
+                    <strong>{{ d.matiere }}</strong> - {{ d.titre_epreuve }} 🔍
+                </a>
+            </td>
+            <td>{{ d.nombre_exemplaires }}</td>
+            <td>
+                {% if d.fichier_pdf %}
+                    <a href="{{ d.fichier_pdf.url }}" class="btn btn-sm btn-outline-primary" target="_blank">📄 PDF</a>
+                {% else %}
+                    <span class="text-muted">Aucun</span>
+                {% endif %}
+            </td>
+            <td>
+                <span class="badge 
+                    {% if d.statut == 'Terminé' or d.statut == 'TERMINÉ' %}bg-success
+                    {% elif d.statut == 'En cours' or d.statut == 'EN_COURS' %}bg-warning text-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {{ d.get_statut_display|default:d.statut }}
+                </span>
+            </td>
+            <td>
+                {% if d.statut == 'EN_ATTENTE' or d.statut == 'En attente' %}
+                    <a href="{% url 'modifier_demande' d.id %}" class="btn btn-sm btn-outline-warning">✏️ Modifier</a>
+                    <a href="{% url 'supprimer_demande' d.id %}" 
+                       class="btn btn-sm btn-outline-danger" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir annuler cette demande ?');">
+                       🗑️ Annuler
+                    </a>
+                {% else %}
+                    <span class="text-muted small">Verrouillé</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">Aucune demande enregistrée.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

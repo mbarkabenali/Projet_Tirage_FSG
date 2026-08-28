@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+    /* Cache les boutons lors de l'impression physique */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .card {
+            border: 1px solid #000 !important;
+        }
+    }
+</style>
+
+<div class="container mt-4" style="max-width: 800px;">
+    <!-- Boutons d'action haut -->
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">⬅️ Retour</a>
+        <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimer la fiche</button>
+    </div>
+
+    <!-- Carte de la fiche de tirage -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 class="m-0">Fiche de Tirage #{{ demande.id }}</h4>
+            <span class="badge 
+                {% if demande.statut == 'Terminé' or demande.statut == 'TERMINÉ' %}bg-success
+                {% elif demande.statut == 'En cours' or demande.statut == 'EN_COURS' %}bg-warning text-dark
+                {% else %}bg-secondary{% endif %} fs-6">
+                {{ demande.get_statut_display|default:demande.statut }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <strong>Enseignant :</strong> {{ demande.enseignant.user.username }}
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                    <strong>Date de demande :</strong> {{ demande.date_demande|date:"d/m/Y H:i" }}
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <p><strong>Matière :</strong> {{ demande.matiere }}</p>
+                    <p><strong>Titre de l'épreuve :</strong> {{ demande.titre_epreuve }}</p>
+                    <p><strong>Nombre d'exemplaires :</strong> <span class="fs-5 text-primary fw-bold">{{ demande.nombre_exemplaires }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date de réservation :</strong> {{ demande.date_reservation|default:"Non spécifiée" }}</p>
+                    <p><strong>Heure de début :</strong> {{ demande.heure_debut|default:"Non spécifiée" }}</p>
+                    <p><strong>Fichier PDF :</strong> 
+                        {% if demande.fichier_pdf %}
+                            <a href="{{ demande.fichier_pdf.url }}" class="no-print" target="_blank">📥 Consulter</a>
+                            <span class="d-none d-print-inline">Présent</span>
+                        {% else %}
+                            <span class="text-muted">Aucun fichier</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if demande.remarques %}
+            <hr>
+            <div>
+                <strong>Remarques / Instructions :</strong>
+                <p class="mt-1 p-2 bg-light border rounded">{{ demande.remarques }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer text-muted text-center small">
+            Faculté des Sciences de Gabès - Service Impression & Tirage
+        </div>
+    </div>
+</div>
+{% endblock %}
